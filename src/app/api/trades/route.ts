@@ -3,24 +3,24 @@ import { NextResponse } from 'next/server';
 import Database from 'better-sqlite3';
 import path from 'path';
 
-// This tells Next.js to not cache this API route, so we get fresh data on each call.
+// This tells Next.js to not cache this API route.
 export const dynamic = 'force-dynamic';
 
-export async function GET(request: Request) {
-    // Find the database file. process.cwd() is the root of your project folder.
+// The _ tells TypeScript we are intentionally not using this parameter.
+export async function GET(_request: Request) {
+    // Find the database file.
     const dbPath = path.join(process.cwd(), 'db', 'polymarket_activity.db');
-    
+
     try {
-        // Open the database in read-only mode.
         const db = new Database(dbPath, { readonly: true });
-        
-        // This query fetches the 50 most recent trades.
+
         const stmt = db.prepare(`
             SELECT 
-                event_timestamp, alert_category, species_name, taker_address, 
-                taker_nickname, market_question, outcome, action, 
-                value_usd, price, size_shares, tx_hash, polymarket_link
+                event_timestamp, species_name, taker_nickname, 
+                market_question, outcome, action, value_usd, 
+                tx_hax, polymarket_link
             FROM activity_log 
+            WHERE value_usd >= 1000
             ORDER BY event_timestamp DESC 
             LIMIT 50
         `);
@@ -28,14 +28,18 @@ export async function GET(request: Request) {
         const trades = stmt.all();
         db.close();
 
-        // Send the data back as a JSON response.
         return NextResponse.json(trades);
 
-    } catch (error: any) {
+    } catch (error: unknown) { // Use 'unknown' for better type safety.
         console.error("API Error fetching trades:", error);
-        // If something goes wrong, send back an error message.
+
+        // Check if the error is an actual Error object before accessing .message
+        const errorMessage = (error instanceof Error)
+            ? error.message
+            : "An unknown error occurred.";
+
         return NextResponse.json(
-            { message: "Failed to fetch trades. Is the database file present?", error: error.message }, 
+            { message: "Failed to fetch trades.", error: errorMessage },
             { status: 500 }
         );
     }
