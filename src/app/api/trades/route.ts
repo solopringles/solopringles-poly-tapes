@@ -7,7 +7,7 @@ import path from 'path';
 export const dynamic = 'force-dynamic';
 
 // The _ tells TypeScript we are intentionally not using this parameter.
-export async function GET(_request: Request) {
+export async function GET() {
     // Find the database file.
     const dbPath = path.join(process.cwd(), 'db', 'polymarket_activity.db');
 
