@@ -1,49 +1,55 @@
 // src/app/page.tsx
-import TradeCard from '@/components/TradeCard';
-import { Trade } from '@/types';
+import { MarketSummary } from "@/types"; // Import the type we just defined
 
-// This function runs on the server to get the initial data for the page.
-async function getTrades(): Promise<Trade[]> {
-    // This line now reads the API URL from an environment variable.
-    // This is the standard way to handle different URLs for development vs. production.
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+// This is an async function that Next.js will run on the server to fetch data
+async function getTrendingMarkets(): Promise<MarketSummary[]> {
+  // Use the environment variable for the API URL, which is set in Vercel for production
+  // and in .env.local for local development.
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-    // We add a check to make sure the URL is actually set. This helps with debugging.
-    if (!apiUrl) {
-        throw new Error("API URL is not configured. Please set NEXT_PUBLIC_API_URL in your Vercel project settings.");
-    }
+  if (!apiUrl) {
+    console.error("API URL is not configured. Please set NEXT_PUBLIC_API_URL.");
+    // In a real app, you might want a more graceful error state
+    return []; 
+  }
 
-    // The fetch call now uses the live API URL and asks for the '/api/trades' endpoint.
-    const res = await fetch(`${apiUrl}/api/trades`, {
-        // We use 'no-store' to make sure we ALWAYS get the latest data from our live API
-        // and never a cached (old) version.
-        cache: 'no-store'
+  try {
+    // We will build this '/api/markets/trending' endpoint on our OCI server next
+    const res = await fetch(`${apiUrl}/api/markets/trending`, {
+      // 'no-store' ensures we always get the latest data and not a cached version
+      cache: 'no-store' 
     });
 
     if (!res.ok) {
-        console.error("Failed to fetch from live API. Response:", await res.text());
-        throw new Error('Failed to fetch trades from the live API.');
+      // Log the error for debugging on the server (Vercel logs)
+      console.error(`Failed to fetch trending markets: ${res.status} ${res.statusText}`);
+      return [];
     }
-    return res.json();
+
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("An error occurred while fetching trending markets:", error);
+    return [];
+  }
 }
 
-export default async function HomePage() {
-    const trades = await getTrades();
 
-    return (
-        // Using TailwindCSS classes for styling our dark mode layout
-        <div className="bg-gray-900 min-h-screen">
-            <main className="container mx-auto max-w-2xl p-4">
-                <header className="mb-8">
-                    <h1 className="text-4xl font-bold text-white text-center">Poly-Tape</h1>
-                    <p className="text-gray-400 text-center mt-2">Live Whale & Leviathan Trade Feed</p>
-                </header>
-                <div className="space-y-4">
-                    {trades.map((trade) => (
-                        <TradeCard key={trade.tx_hash} trade={trade} />
-                    ))}
-                </div>
-            </main>
-        </div>
-    );
+export default async function Home() {
+  // Call the data-fetching function. Next.js automatically awaits this.
+  const markets = await getTrendingMarkets();
+
+  return (
+    <div>
+      <h1 className="text-3xl font-bold mb-6">Trending Markets</h1>
+      
+      {/* 
+        This is where our new <MarketTable /> component will go.
+        For now, we can just display the raw data to confirm it works.
+      */}
+      <pre className="mt-4 p-4 bg-gray-900 rounded-md text-sm">
+        {JSON.stringify(markets, null, 2)}
+      </pre>
+    </div>
+  );
 }
