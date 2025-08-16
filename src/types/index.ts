@@ -14,7 +14,6 @@ export type Trade = {
 };
 
 
-
 // This defines the structure for a single market in our trending dashboard
 export interface MarketSummary {
   condition_id: string;
@@ -27,5 +26,26 @@ export interface MarketSummary {
   price: number;
   price_change_1h: number;
   price_change_24h: number;
+  last_updated: number;
+}
+
+export interface MarketSummary {
+  condition_id: string;
+  question: string;
+  slug: string;
+  image_url: string;
+  category: string;
+  is_featured: number; // 1 for true, 0 for false
+  is_new: number;      // 1 for true, 0 for false
+  volume_24h: number;
+  volume_7d: number;
+  volume_30d: number;
+  total_volume: number;
+  liquidity: number;
+  price: number;
+  price_change_1h: number;
+  price_change_24h: number;
+  start_date_ts: number | null; // Can be null if data is missing
+  end_date_ts: number | null;   // Can be null if data is missing
   last_updated: number;
 }
