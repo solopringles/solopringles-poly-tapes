@@ -1,0 +1,10 @@
+Trust the Build, Not the Dev Server.
+The local npm run dev server is lenient to speed up development. Vercel's npm run build is strict and will fail on any warning. Always run npm run build locally before pushing to catch type errors, linting issues, and unused variables early.
+The Network Has Multiple Layers.
+A Timeout or Connection Refused error is rarely just one thing. Before debugging the application, check the entire chain of firewalls in order: Cloudflare Proxy Status -> OCI Security List -> Server iptables/ufw. The error is almost always in one of these three network gates.
+The Error is in the Component That Renders the Data.
+If the API is sending correct data but the UI is wrong (e.g., a broken URL), the error is not in the page component (page.tsx). It's in the last, smallest component that touches the data, like MarketTableRow.tsx. Drill down to the final point of rendering.
+Update the Type Definition First.
+When adding a new property to the API response (like childMarketCount), the very next step is to add it to the front-end's src/types/index.ts file. Forgetting this will break the Vercel build. API change and Type change are one atomic action.
+Test Configs Immediately After Editing.
+After editing any configuration file (nginx.conf, eslint.config.mjs, etc.), run its test command (sudo nginx -t, npm run build) immediately. Do not make other changes. This isolates errors and avoids wasting time debugging the wrong thing.

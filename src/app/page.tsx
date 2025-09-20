@@ -1,12 +1,16 @@
-// src/app/page.tsx --- FINAL VERSION, CONFIRMED TO USE EnhancedMarketTable
+// src/app/page.tsx --- WITH "END OF RESULTS" MESSAGE
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { MarketSummary } from "@/types";
+import { useState, useEffect } from 'react';
+import { MarketSummary, MarketsApiResponse } from "@/types";
 import { MainFilterBar } from '@/components/MainFilterBar';
-// --- CRITICAL: Ensure we import the NEW EnhancedMarketTable ---
-import { EnhancedMarketTable } from '@/components/EnhancedMarketTable'; 
+import { EnhancedMarketTable } from '@/components/EnhancedMarketTable';
+import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
+
+// Adjust this value to match your backend's pagination size.
+const PAGE_SIZE = 20;
 
 export default function Home() {
   const [displayMarkets, setDisplayMarkets] = useState<MarketSummary[]>([]);
@@ -14,108 +18,132 @@ export default function Home() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [canLoadMore, setCanLoadMore] = useState(true);
   
-  const [filters, setFilters] = useState({ main: 'Trending', search: '' });
-  const [page, setPage] = useState(1);
-  const [sortBy, setSortBy] = useState('volume_24h');
+  const [activeFilters, setActiveFilters] = useState({ main: 'Trending', search: '' });
+  const [activeSortBy, setActiveSortBy] = useState('volume_24h');
 
-  const fetchMarkets = useCallback(async (isNewFilterSet: boolean) => {
-    if (isNewFilterSet) {
+  const [debouncedFilters, setDebouncedFilters] = useState(activeFilters);
+  const [debouncedSortBy, setDebouncedSortBy] = useState(activeSortBy);
+  
+  const [page, setPage] = useState(1);
+
+  // Debouncing effect (no changes)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedFilters(activeFilters);
+      setDebouncedSortBy(activeSortBy);
+      setPage(1);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [activeFilters, activeSortBy]);
+
+  // Fetching effect (no changes)
+  useEffect(() => {
+    if (page === 1) {
       setIsLoading(true);
       setDisplayMarkets([]);
-    } else {
-      setIsLoadingMore(true);
     }
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (!apiUrl) {
-      console.error("API URL missing");
-      setIsLoading(false);
-      return;
-    }
+    const controller = new AbortController();
+    const fetchMarkets = async () => {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      const params = new URLSearchParams({ page: String(page), sortBy: debouncedSortBy });
 
-    const params = new URLSearchParams({ 
-      page: String(isNewFilterSet ? 1 : page),
-      sortBy: sortBy,
-    });
-
-    if (filters.search) {
-      params.append('search', filters.search);
-    } else {
-      if (filters.main !== 'Trending' && filters.main !== 'New' && filters.main !== 'All') {
-        params.append('category', filters.main);
-      } else if (filters.main !== 'All') {
-        params.append('filter', filters.main.toLowerCase());
+      if (debouncedFilters.search) {
+        params.append('search', debouncedFilters.search);
+      } else if (debouncedFilters.main !== 'Trending' && debouncedFilters.main !== 'New' && debouncedFilters.main !== 'All') {
+        params.append('category', debouncedFilters.main);
+      } else if (debouncedFilters.main !== 'All') {
+        params.append('filter', debouncedFilters.main.toLowerCase());
       }
-    }
 
-    try {
-      const res = await fetch(`${apiUrl}/api/markets?${params.toString()}`, { next: { revalidate: 60 } });
-      const newMarkets = await res.json();
-      
-      if (isNewFilterSet) {
-        setDisplayMarkets(newMarkets);
-      } else {
-        setDisplayMarkets(prev => [...prev, ...newMarkets]);
+      try {
+        const res = await fetch(`${apiUrl}/api/markets?${params.toString()}`, { cache: 'no-store', signal: controller.signal });
+        const data: MarketsApiResponse | MarketSummary[] = await res.json();
+        
+        const newMarkets = Array.isArray(data) 
+          ? data 
+          : (Array.isArray(data?.markets) ? data.markets : []);
+
+        if (page === 1) {
+          setDisplayMarkets(newMarkets);
+        } else {
+          setDisplayMarkets(prev => [...prev, ...newMarkets]);
+        }
+        
+        const hasPaginationData = data && typeof data === 'object' && !Array.isArray(data);
+        if (hasPaginationData) {
+          setCanLoadMore(data.current_page < data.total_pages);
+        } else {
+          setCanLoadMore(newMarkets.length === PAGE_SIZE);
+        }
+
+      } catch (error: any) {
+        if (error.name !== 'AbortError') {
+          console.error("Fetch error:", error);
+          setCanLoadMore(false);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+          setIsLoadingMore(false);
+        }
       }
-      setCanLoadMore(newMarkets.length === 50);
-    } catch (error) {
-      console.error("Error fetching markets:", error);
-    } finally {
-      setIsLoading(false);
-      setIsLoadingMore(false);
-    }
-  }, [page, filters, sortBy]);
+    };
 
-  useEffect(() => {
-    setPage(1);
-    fetchMarkets(true);
-  }, [filters, sortBy]);
-  
-  useEffect(() => {
-    if (page > 1) {
-      fetchMarkets(false);
-    }
-  }, [page]);
+    fetchMarkets();
 
+    return () => controller.abort();
+  }, [debouncedFilters, debouncedSortBy, page]);
+
+
+  // Handlers (no changes)
+  const handleSelectMainFilter = (filter: string) => {
+    setActiveFilters({ main: filter, search: '' });
+  };
+  const handleSearch = (query: string) => {
+    setActiveFilters({ main: 'All', search: query });
+  };
+  const handleSort = (column: string) => {
+    setActiveSortBy(column);
+  };
   const handleLoadMore = () => {
-    if (!isLoadingMore) {
+    if (!isLoadingMore && canLoadMore) {
+      setIsLoadingMore(true);
       setPage(prev => prev + 1);
     }
-  };
-  
-  const handleSelectMainFilter = (filter: string) => {
-    setFilters({ main: filter, search: '' });
-  };
-  
-  const handleSearch = (query: string) => {
-    setFilters({ main: 'Trending', search: query });
-  };
-
-  const handleSort = (column: string) => {
-    setSortBy(column);
   };
 
   return (
     <div className="space-y-6">
-      <MainFilterBar activeFilter={filters.main} onSelectFilter={handleSelectMainFilter} onSearch={handleSearch} />
-      <div className="rounded-lg bg-gray-900 shadow-lg">
-        {/* --- CRITICAL: Ensure we RENDER the NEW EnhancedMarketTable --- */}
+      <MainFilterBar activeFilter={activeFilters.main} onSelectFilter={handleSelectMainFilter} onSearch={handleSearch} />
+      <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
         <EnhancedMarketTable 
           markets={displayMarkets}
-          isLoading={isLoading}
+          isLoading={isLoading && page === 1}
           onSort={handleSort}
-          currentSort={sortBy}
+          currentSort={activeSortBy}
         />
       </div>
+
+      {/* --- THIS IS THE UPDATED SECTION --- */}
+
+      {/* Condition 1: Show the "Load More" button if we CAN load more */}
       {canLoadMore && !isLoading && (
-        <div className="text-center py-4">
-          <button
-            onClick={handleLoadMore}
-            disabled={isLoadingMore}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg disabled:bg-gray-500 w-40"
-          >
+        <div className="flex justify-center py-4">
+          <Button onClick={handleLoadMore} disabled={isLoadingMore} className="w-40">
+            {isLoadingMore && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isLoadingMore ? 'Loading...' : 'Load More'}
-          </button>
+          </Button>
+        </div>
+      )}
+
+      {/* Condition 2: Show the "End of results" message if we CANNOT load more */}
+      {!canLoadMore && !isLoading && displayMarkets.length > PAGE_SIZE && (
+        <div className="flex justify-center py-4">
+          <p className="text-sm text-muted-foreground">
+            You've reached the end of the results.
+          </p>
         </div>
       )}
     </div>

@@ -1,10 +1,12 @@
-// src/app/layout.tsx --- CORRECTED HTML STRUCTURE
+// src/app/layout.tsx --- REFACTORED WITH SHADCN/UI & THEME AWARENESS
 
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
-import { Sidebar } from "@/components/Sidebar";
+import "./globals.css"; // KEEP THIS IMPORT - IT'S CRITICAL!
+// We will need to see Sidebar and Footer next, but for now, keep the imports
+import { Sidebar } from "@/components/Sidebar"; 
 import { Footer } from "@/components/Footer";
+import { cn } from "@/lib/utils"; // Import cn utility if you are using it elsewhere
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,29 +21,33 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full bg-gray-950">
+    // 1. CRITICAL: Add className="dark" to activate the dark theme
+    // 2. Use bg-background (defined by shadcn) instead of hardcoded bg-gray-950
+    <html lang="en" className="h-full dark bg-background"> 
+      
       {/* 
-        The <body> is now a flex container that arranges its children in a column.
-        This ensures the footer sits correctly at the bottom.
+        We use the cn utility to combine the Inter font with the
+        theme-aware body styles (font-sans, antialiased, etc.) 
       */}
-      <body className={`${inter.className} h-full flex flex-col`}>
-        {/* 
-          This wrapper div now takes up the main flexible space, allowing it to grow.
-          It contains the sidebar and the main content.
-        */}
+      <body className={cn(
+          "h-full flex flex-col font-sans antialiased",
+          inter.className
+      )}>
+        
+        {/* Main Content Area: Sidebar + Page */}
         <div className="flex flex-1">
+          {/* Sidebar Area */}
           <div className="sticky top-0 h-screen">
+            {/* The Sidebar component will need refactoring next! */}
             <Sidebar />
           </div>
+          
+          {/* Main Page Content */}
           <main className="flex-1 p-8 overflow-y-auto">
             {children}
           </main>
         </div>
         
-        {/* 
-          The Footer is now correctly placed as the last element inside the <body>,
-          outside of the main content's flex container.
-        */}
         <Footer />
       </body>
     </html>

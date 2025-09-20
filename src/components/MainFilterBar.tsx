@@ -1,64 +1,56 @@
-// src/components/MainFilterBar.tsx --- FINAL UPGRADED VERSION
+// src/components/MainFilterBar.tsx --- REFACTORED WITH SHADCN/UI
 
 'use client';
 
 import { useState } from 'react';
 import { Search } from 'lucide-react';
 
-// 1. Update the props interface to accept the new onSearch function
+// NEW: Import the shadcn/ui components
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+
 interface MainFilterBarProps {
   activeFilter: string;
   onSelectFilter: (filter: string) => void;
   onSearch: (query: string) => void;
 }
 
-// These categories are now defined inside the component
 const mainCategories = [
   "Trending", "New", "Politics", "Crypto", "Sports", "Tech",
   "Culture", "World", "Economy", "Elections"
 ];
 
 export function MainFilterBar({ activeFilter, onSelectFilter, onSearch }: MainFilterBarProps) {
-  // 2. Add state to manage the text inside the search input
   const [searchQuery, setSearchQuery] = useState('');
 
-  // 3. Create a handler for the form submission
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); // Prevent the browser from reloading the page
-    onSearch(searchQuery); // Call the function passed down from page.tsx
+    e.preventDefault();
+    onSearch(searchQuery);
   };
 
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-gray-700 pb-4">
-      {/* Category Filters */}
-      <div className="flex items-center gap-2 overflow-x-auto">
-        {mainCategories.map((category) => (
-          <button
-            key={category}
-            onClick={() => onSelectFilter(category)}
-            className={`px-4 py-2 text-sm font-semibold rounded-full transition-colors whitespace-nowrap ${
-              activeFilter === category
-                ? 'bg-white text-gray-900'
-                : 'text-gray-300 hover:bg-gray-700'
-            }`}
-          >
-            {category}
-          </button>
-        ))}
-      </div>
+    <div className="flex items-center justify-between gap-4">
+      {/* Category Filters -> Converted to Tabs */}
+      <Tabs value={activeFilter} onValueChange={onSelectFilter}>
+        <TabsList>
+          {mainCategories.map((category) => (
+            <TabsTrigger key={category} value={category}>
+              {category}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
 
-      {/* 4. Add the new Search Input Form */}
+      {/* Search Input -> Converted to Input */}
       <form onSubmit={handleSearchSubmit} className="relative flex-shrink-0">
-        <input
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search markets..."
-          className="bg-gray-800 border border-gray-600 rounded-full py-2 pl-10 pr-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
+          className="pl-10 w-64" // Add padding for the icon
         />
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <Search className="h-5 w-5 text-gray-400" />
-        </div>
       </form>
     </div>
   );

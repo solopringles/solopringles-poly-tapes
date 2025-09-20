@@ -1,71 +1,108 @@
-// src/components/MarketTableRow.tsx --- FINAL ROBUST IMAGE HANDLING
+// src/components/MarketTableRow.tsx --- FINAL VERSION WITH TRANSITIONS
 
-import Image from 'next/image';
+'use client';
+
 import Link from 'next/link';
 import { MarketSummary } from '@/types';
-import { formatDistanceToNowStrict, format } from 'date-fns';
-import { useState } from 'react'; // Import useState for error handling
+import { formatDistanceToNowStrict, format, differenceInDays } from 'date-fns';
 
-const formatVolume = (num: number | null | undefined): string => { if (typeof num !== 'number' || num === 0) return '—'; if (num >= 1_000_000) return `$${(num / 1_000_000).toFixed(1)}M`; if (num >= 1_000) return `$${(num / 1_000).toFixed(1)}K`; return `$${num.toFixed(0)}`; };
-const formatEndDate = (timestamp: number | null | undefined): string => { if (typeof timestamp !== 'number') return '—'; try { const endDate = new Date(timestamp * 1000); const now = new Date(); if (endDate < now) return format(endDate, 'MMM d, yyyy'); const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); if (endDate > sevenDaysFromNow) return format(endDate, 'MMM d'); return formatDistanceToNowStrict(endDate, { addSuffix: true }); } catch { return '—'; } };
-const formatPercent = (num: number | null | undefined): string => { if (typeof num !== 'number') return '—'; return `${(num * 100).toFixed(1)}%`; };
+// shadcn/ui component imports
+import { TableRow, TableCell } from "@/components/ui/table";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+
+// Helper function to format large numbers into human-readable volume strings (e.g., $1.23M).
+const formatVolume = (num: number | null | undefined): string => {
+  if (num === null || typeof num === 'undefined') return '—';
+  if (num === 0) return '$0';
+  if (Math.abs(num) >= 1_000_000) {
+    return `$${(num / 1_000_000).toFixed(2)}M`;
+  }
+  if (Math.abs(num) >= 1_000) {
+    return `$${(num / 1_000).toFixed(1)}K`;
+  }
+  return `$${num.toFixed(0)}`;
+};
+
+// Helper function to format a Unix timestamp into a readable end date string.
+const formatEndDate = (timestamp: number | null | undefined): string => {
+  if (!timestamp) return '—';
+  const endDate = new Date(timestamp * 1000);
+  const now = new Date();
+  const daysUntilEnd = differenceInDays(endDate, now);
+
+  if (daysUntilEnd < 0) return 'Ended';
+  if (daysUntilEnd <= 14) {
+    return formatDistanceToNowStrict(endDate, { addSuffix: true });
+  }
+  return format(endDate, 'MMM d, yyyy');
+};
+
+// Helper function to format a decimal into a signed percentage string (e.g., +5.23%).
+const formatPercent = (num: number | null | undefined): string => {
+  if (num === null || typeof num === 'undefined') return '—';
+  if (num === 0) return '0.00%';
+  const percentage = num * 100;
+  const sign = percentage > 0 ? '+' : '';
+  return `${sign}${percentage.toFixed(2)}%`;
+};
+
 
 interface MarketTableRowProps { market: MarketSummary; }
 
 export function MarketTableRow({ market }: MarketTableRowProps) {
-  const [imageError, setImageError] = useState(false); // State to track image loading errors
-
   const priceChange = market.price_change_24h ?? 0;
-  const priceChange24hColor = priceChange > 0 ? 'text-green-400' : priceChange < 0 ? 'text-red-400' : 'text-gray-400';
-  const isGroup = (market.childMarketCount || 1) > 1;
+  const priceChange24hColor = priceChange > 0 ? 'text-green-500' : priceChange < 0 ? 'text-red-500' : 'text-muted-foreground';
+  const isGroup = (market.childMarketCount || 0) > 1;
 
-  let eventUrl = "https://polymarket.com/event/";
-  if (market.parent_event_slug && market.parent_event_slug !== market.slug) {
-    eventUrl += `${market.parent_event_slug}/${market.slug}`;
-  } else {
-    eventUrl += market.slug;
+  const isLinkable = !!market.slug;
+  let internalUrl = '#';
+  if (isLinkable) {
+    internalUrl = isGroup
+      ? `/markets/${market.slug}`
+      : `/markets/${market.slug}?cid=${market.condition_id}`;
   }
 
-  const hasValidImageUrl = typeof market.image_url === 'string' && market.image_url.trim().startsWith('http');
-  const displayImage = hasValidImageUrl && !imageError;
+  // Generate a fallback for the avatar from the first two letters of the market question
+  const avatarFallback = market.question?.substring(0, 2).toUpperCase() || 'M';
 
   return (
-    <tr className="border-b border-gray-800 hover:bg-gray-800/50 transition-colors">
-      {/* Cell 1: Image */}
-      <td className="p-4 w-px">
-        <Link href={eventUrl} target="_blank" rel="noopener noreferrer" className="flex items-center">
-          {/* --- THIS IS THE FIX --- */}
-          {/* This wrapper provides the consistent background and shape. */}
-          <div className="relative w-10 h-10 rounded-full bg-gray-700 flex-shrink-0">
-            {displayImage && (
-              <Image 
-                src={market.image_url!} 
-                alt={market.question || 'Market image'} 
-                fill // Use `fill` to make the image adapt to the parent div
-                className="rounded-full object-cover" // Style the image itself
-                onError={() => setImageError(true)} // Handle broken links
-              />
-            )}
-          </div>
-          {/* --- END OF FIX --- */}
+    // NEW: Added transition classes for smooth fade-in/out and a theme-aware hover effect.
+    <TableRow className="transition-opacity duration-300 ease-in-out hover:bg-muted/50">
+      
+      {/* Cell 1: Image Avatar */}
+      <TableCell className="w-px">
+        <Link href={internalUrl} className={!isLinkable ? 'pointer-events-none' : ''}>
+          <Avatar>
+            <AvatarImage src={market.image_url} alt={market.question || 'Market image'} />
+            <AvatarFallback>{avatarFallback}</AvatarFallback>
+          </Avatar>
         </Link>
-      </td>
+      </TableCell>
+
       {/* Cell 2: Question */}
-      <td className="p-4 max-w-sm">
-        <Link href={eventUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-white hover:underline">
+      <TableCell className="max-w-sm font-medium">
+        <Link href={internalUrl} className={`hover:underline ${!isLinkable ? 'pointer-events-none' : ''}`}>
           {market.question}
         </Link>
-      </td>
-      {/* ... rest of the cells are unchanged ... */}
-      <td className="p-4 text-center">
-        {isGroup && (<span className="text-xs text-blue-400 bg-blue-500/10 px-2 py-1 rounded-full font-medium">{market.childMarketCount} Outcomes</span>)}
-      </td>
-      <td className="p-4 text-right font-mono text-white">{isGroup ? '—' : `$${(market.price ?? 0).toFixed(4)}`}</td>
-      <td className={`p-4 text-right font-mono ${priceChange24hColor}`}>{formatPercent(market.price_change_24h)}</td>
-      <td className="p-4 text-right font-mono text-gray-300">{formatVolume(market.volume_24h)}</td>
-      <td className="p-4 text-right font-mono text-gray-300">{formatVolume(market.volume_7d)}</td>
-      <td className="p-4 text-right font-mono text-gray-300">{formatVolume(market.liquidity)}</td>
-      <td className="p-4 text-right font-mono text-gray-300">{formatEndDate(market.end_date_ts)}</td>
-    </tr>
+      </TableCell>
+
+      {/* Cell 3: Outcomes Badge */}
+      <TableCell className="text-center">
+        {isGroup && (
+          <Badge variant="outline">{market.childMarketCount} Outcomes</Badge>
+        )}
+      </TableCell>
+
+      {/* Cell 4: Price */}
+      <TableCell className="text-right font-mono">{isGroup ? '—' : `$${(market.price ?? 0).toFixed(4)}`}</TableCell>
+
+      {/* Data Cells */}
+      <TableCell className={`text-right font-mono ${priceChange24hColor}`}>{formatPercent(market.price_change_24h)}</TableCell>
+      <TableCell className="text-right font-mono text-muted-foreground">{formatVolume(market.volume_24h)}</TableCell>
+      <TableCell className="text-right font-mono text-muted-foreground">{formatVolume(market.volume_7d)}</TableCell>
+      <TableCell className="text-right font-mono text-muted-foreground">{formatVolume(market.liquidity)}</TableCell>
+      <TableCell className="text-right font-mono text-muted-foreground">{formatEndDate(market.end_date_ts)}</TableCell>
+    </TableRow>
   );
 }

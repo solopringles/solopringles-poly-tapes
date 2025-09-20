@@ -1,8 +1,23 @@
-// src/components/EnhancedMarketTable.tsx --- FINAL SYNCHRONIZED VERSION
+// src/components/EnhancedMarketTable.tsx --- FINAL VERSION WITH SKELETONS
 
 import { MarketSummary } from '@/types';
 import { MarketTableRow } from './MarketTableRow';
 import { ChevronsUpDown } from 'lucide-react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { MarketTableSkeletonRow } from './MarketTableSkeletonRow'; // Import the new skeleton row
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"; // Import Tooltip components
 import clsx from 'clsx';
 
 interface EnhancedMarketTableProps {
@@ -12,55 +27,71 @@ interface EnhancedMarketTableProps {
   currentSort: string;
 }
 
-const SortableHeader = ({ title, columnId, onSort, currentSort }: { title: string, columnId: string, onSort: (column: string) => void, currentSort: string }) => {
-  const isActive = currentSort === columnId;
-  return (
-    <th 
-      className="p-4 font-semibold text-right cursor-pointer group hover:bg-gray-800 transition-colors"
-      onClick={() => onSort(columnId)}
-    >
-      <div className="flex items-center justify-end gap-1">
-        <span className={clsx(isActive && "text-white")}>{title}</span>
-        <ChevronsUpDown className={clsx("h-4 w-4 text-gray-500 group-hover:text-white transition-colors", isActive && "text-white")} />
-      </div>
-    </th>
-  );
-};
-
 export function EnhancedMarketTable({ markets, isLoading, onSort, currentSort }: EnhancedMarketTableProps) {
-  if (isLoading && markets.length === 0) {
-    return <div className="text-center p-20 text-gray-400">Loading Markets...</div>;
-  }
-
-  if (markets.length === 0) {
-    return <div className="text-center p-20 text-gray-400">No markets found.</div>;
-  }
+  
+  // A helper function for creating sortable headers to reduce repetition.
+  const createSortableHeader = (title: string, columnId: string) => {
+    const isActive = currentSort === columnId;
+    return (
+      <TableHead 
+        className="text-right cursor-pointer group"
+        onClick={() => onSort(columnId)}
+      >
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center justify-end gap-1">
+                <span className={clsx(isActive && "text-foreground")}>{title}</span>
+                <ChevronsUpDown className={clsx("h-4 w-4 text-muted-foreground group-hover:text-foreground", isActive && "text-foreground")} />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Sort by {title}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </TableHead>
+    );
+  };
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full table-auto border-collapse text-left">
-        <thead className="border-b border-gray-700 text-sm text-gray-400">
-          <tr className="table-row">
-            {/* Defines the first 2 columns: Image + Question */}
-            <th className="p-4 font-semibold" colSpan={2}>Market</th> 
-            {/* Defines the 3rd column */}
-            <th className="p-4 font-semibold text-center w-36">Outcomes</th> 
-            {/* Defines the 4th column */}
-            <th className="p-4 font-semibold text-right">Price</th> 
-            {/* Defines the remaining 5 sortable columns */}
-            <SortableHeader title="24h Change" columnId="price_change_24h" onSort={onSort} currentSort={currentSort} />
-            <SortableHeader title="24h Volume" columnId="volume_24h" onSort={onSort} currentSort={currentSort} />
-            <SortableHeader title="7d Volume" columnId="volume_7d" onSort={onSort} currentSort={currentSort} />
-            <SortableHeader title="Liquidity" columnId="liquidity" onSort={onSort} currentSort={currentSort} />
-            <SortableHeader title="Ends" columnId="end_date_ts" onSort={onSort} currentSort={currentSort} />
-          </tr>
-        </thead>
-        <tbody>
-          {markets.map((market) => (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead colSpan={2}>Market</TableHead>
+          <TableHead className="text-center w-36">Outcomes</TableHead>
+
+          {/* Non-sortable Price Header */}
+          <TableHead className="text-right">Price</TableHead>
+          
+          {/* Sortable Headers */}
+          {createSortableHeader("24h Change", "price_change_24h")}
+          {createSortableHeader("24h Volume", "volume_24h")}
+          {createSortableHeader("7d Volume", "volume_7d")}
+          {createSortableHeader("Liquidity", "liquidity")}
+          {createSortableHeader("Ends", "end_date_ts")}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {isLoading ? (
+          // If loading, show 10 skeleton rows to fill the screen
+          Array.from({ length: 15 }).map((_, index) => (
+            <MarketTableSkeletonRow key={index} />
+          ))
+        ) : markets.length === 0 ? (
+          // If not loading and no markets, show the "No markets found" message
+          <TableRow>
+            <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
+              No markets found.
+            </TableCell>
+          </TableRow>
+        ) : (
+          // Otherwise, map over and display the actual market data
+          markets.map((market) => (
             <MarketTableRow key={market.condition_id} market={market} />
-          ))}
-        </tbody>
-      </table>
-    </div>
+          ))
+        )}
+      </TableBody>
+    </Table>
   );
 }

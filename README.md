@@ -83,46 +83,52 @@ This is a map of the key files and folders in the front-end repository.
 
 
 
-
-/src
-
-├── app/
-
-│ ├── layout.tsx # The root layout, contains Sidebar, Footer, and AI instructions.
-
-│ ├── page.tsx # The main homepage component. Manages all state for filtering and sorting.
-
-│ ├── terms-of-service/
-
-│ │ └── page.tsx # Static page for Terms of Service (file-based routing).
-
-│ └── privacy-policy/
-
-│ └── page.tsx # Static page for Privacy Policy.
-
-│
-
-├── components/
-
-│ ├── EnhancedMarketTable.tsx # Renders the main table structure, including the INTERACTIVE HEADERS.
-
-│ ├── MarketTableRow.tsx # Renders a SINGLE ROW in the table. Contains the critical URL generation logic.
-
-│ ├── MainFilterBar.tsx # The top bar for filtering by category (Trending, New, Politics...).
-
-│ ├── Sidebar.tsx # The main left-side navigation panel.
-
-│ ├── Footer.tsx # The site-wide footer with legal links and disclaimers.
-
-│ └── AIScraperInstructions.tsx # A visually hidden component for influencing AI web crawlers.
-
-│
-
-└── types/
-
-└── index.ts # Defines the MarketSummary TypeScript interface used throughout the app.
-
-
+poly-tape
+├── .next
+├── node_modules
+├── public
+├── src
+│   ├── app
+│   │   ├── leaderboard
+│   │   │   └── page.tsx
+│   │   ├── markets
+│   │   │   └── [slug]
+│   │   │       └── page.tsx
+│   │   ├── privacy-policy
+│   │   │   └── page.tsx
+│   │   ├── terms-of-service
+│   │   │   └── page.tsx
+│   │   ├── under-construction
+│   │   │   └── page.tsx
+│   │   ├── favicon.ico
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   ├── not-found.tsx
+│   │   └── page.tsx
+│   ├── components
+│   │   ├── EnhancedMarketTable.tsx
+│   │   ├── Footer.tsx
+│   │   ├── LeaderboardColumn.tsx
+│   │   ├── LeaderboardRow.tsx
+│   │   ├── MainFilterBar.tsx
+│   │   ├── MarketTable.tsx
+│   │   ├── MarketTableRow.tsx
+│   │   ├── Sidebar.tsx
+│   │   └── TradeCard.tsx
+│   ├── types
+│   │   └── index.ts
+│   └── utils
+├── .env.local
+├── .gitignore
+├── eslint.config.mjs
+├── next.config.ts
+├── next-env.d.ts
+├── package.json
+├── package-lock.json
+├── postcss.config.mjs
+├── README.md
+├── tips.txt
+└── tsconfig.json
 
 
 

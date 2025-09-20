@@ -1,24 +1,26 @@
-// src/components/Footer.tsx
+// src/components/Footer.tsx --- REFACTORED WITH SHADCN/UI
 
 import Link from 'next/link';
 
 export function Footer() {
   return (
-    <footer className="bg-gray-900 border-t border-gray-800 mt-12 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-gray-500">
+    // Use theme-aware background and border colors
+    <footer className="bg-background border-t border-border mt-12 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-muted-foreground">
         
         <div className="mb-4">
-          <Link href="/terms-of-service" className="mx-2 hover:text-white transition-colors">
+          <Link href="/terms-of-service" className="mx-2 hover:text-foreground transition-colors">
             Terms of Service
           </Link>
-          <span className="text-gray-700">|</span>
-          <Link href="/privacy-policy" className="mx-2 hover:text-white transition-colors">
+          {/* Use a theme-aware border color for the separator */}
+          <span className="text-border">|</span>
+          <Link href="/privacy-policy" className="mx-2 hover:text-foreground transition-colors">
             Privacy Policy
           </Link>
         </div>
 
         <p className="mb-4 max-w-3xl mx-auto">
-          **DISCLAIMER:** PolyLeviathan is an independent, third-party data analysis tool and is not affiliated with Polymarket. All data is provided for informational purposes only and does not constitute financial or investment advice. Always verify information on the official Polymarket website before making any financial decisions.
+          <strong>DISCLAIMER:</strong> PolyLeviathan is an independent, third-party data analysis tool and is not affiliated with Polymarket. All data is provided for informational purposes only and does not constitute financial or investment advice. Always verify information on the official Polymarket website before making any financial decisions.
         </p>
 
         <p>

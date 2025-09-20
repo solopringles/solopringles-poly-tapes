@@ -1,6 +1,6 @@
-// src/types/index.ts --- FINAL CORRECTED & CLEANED
+// src/types/index.ts --- MODIFIED
 
-// This type is for future features (e.g., whale profiles) and is correct.
+// This type remains unchanged
 export type Trade = {
   tx_hash: string;
   taker_nickname: string | null;
@@ -15,8 +15,7 @@ export type Trade = {
   size_shares: number;
 };
 
-// This is the single, correct interface for our market dashboard.
-// The old, duplicate definition has been removed.
+// --- REPLACE the old MarketSummary with this one ---
 export interface MarketSummary {
   condition_id: string;
   question: string | null;
@@ -39,4 +38,45 @@ export interface MarketSummary {
   end_date_ts: number | null;
   unique_traders: number | null;
   last_updated: number | null;
+  // --- NEWLY ADDED FIELDS ---
+  open_interest: number | null;
+  tags: string[];
+}
+
+// --- ADD THIS NEW INTERFACE ---
+/**
+ * Represents the structure of the API response from the /api/markets endpoint,
+ * which will be used for searching and listing markets.
+ */
+export interface MarketsApiResponse {
+  markets: MarketSummary[];
+  total_pages: number;
+  current_page: number;
+}
+
+
+// This interface remains unchanged
+export interface LeaderboardEntry {
+  address: string;
+  display_name: string;
+  pq_score: number | null;
+  all_time_realized_pnl: number | null;
+  volume_90day: number | null;
+  lifetime_sharpe_ratio: number | null;
+  trade_count_90day: number | null;
+  isPnlDataIncomplete?: boolean; // Optional flag
+}
+
+// This interface remains unchanged
+export interface TraderProfile extends LeaderboardEntry {
+  date_added: number;
+  last_trade_timestamp: number | null;
+  is_high_activity: number; // Will be 0 or 1
+  realized_pnl: number | null;
+  unrealized_pnl: number | null;
+  trade_count: number | null;
+  profit_factor: number | null;
+  win_loss_ratio: number | null;
+  pnl_volatility: number | null;
+  last_calculated: number | null;
 }
