@@ -42,6 +42,7 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 // The component now accepts the full market object
+
 export function PriceChart({ market }: { market: MarketSummary }) {
   const { condition_id: conditionId, price: currentPrice, start_date_ts: marketStartDate } = market;
 
@@ -58,31 +59,41 @@ export function PriceChart({ market }: { market: MarketSummary }) {
       
       const now = new Date();
       
-      // --- THIS IS THE FIX ---
       let augmentedData = historyData;
 
       if (historyData.length === 0) {
-        // SCENARIO A: No data returned. Create a flat line.
         let startTime = new Date();
         switch (timeframe) {
           case '24h': startTime.setDate(now.getDate() - 1); break;
           case '7d': startTime.setDate(now.getDate() - 7); break;
           case '30d': startTime.setDate(now.getDate() - 30); break;
-          case 'all': startTime = new Date(marketStartDate * 1000); break;
+          
+          // --- MODIFIED CASE ---
+          case 'all':
+            if (marketStartDate) {
+              // If start date exists, use it
+              startTime = new Date(marketStartDate * 1000);
+            } else {
+              // Fallback if no start date: default to 30 days ago
+              startTime.setDate(now.getDate() - 30);
+            }
+            break;
+          // --- END MODIFICATION ---
         }
         
-        // Create two points for the flat line using the market's current price
         augmentedData = [
           { timestamp: startTime.getTime() / 1000, price: currentPrice },
           { timestamp: now.getTime() / 1000, price: currentPrice },
         ];
       } else {
-        // SCENARIO B: Data was returned. Extend the line to "now".
         const lastPoint = historyData[historyData.length - 1];
-        augmentedData.push({
-          timestamp: now.getTime() / 1000,
-          price: lastPoint.price, // Use the last known price
-        });
+        // Ensure we don't add a duplicate point if the last point is already "now"
+        if (lastPoint.timestamp < now.getTime() / 1000 - 60) { // Add some buffer
+            augmentedData.push({
+              timestamp: now.getTime() / 1000,
+              price: lastPoint.price,
+            });
+        }
       }
 
       const formattedData = augmentedData.map((point) => ({
