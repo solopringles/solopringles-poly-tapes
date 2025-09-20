@@ -73,9 +73,16 @@ function SingleMarketView({ market }: { market: MarketSummary }) {
         <h1 className="text-3xl font-bold tracking-tight text-foreground">{market.question}</h1>
         <div className="flex items-center gap-2">
           <Badge variant="secondary">{market.category}</Badge>
-          <span className="text-sm text-muted-foreground">
-            Resolves: {format(new Date(market.end_date_ts * 1000), 'MMM d, yyyy')}
-          </span>
+          
+          {/* --- MODIFIED SECTION --- */}
+          {/* Only render this span if the end_date_ts exists and is a valid number */}
+          {market.end_date_ts && (
+            <span className="text-sm text-muted-foreground">
+              Resolves: {format(new Date(market.end_date_ts * 1000), 'MMM d, yyyy')}
+            </span>
+          )}
+          {/* --- END MODIFICATION --- */}
+
         </div>
       </div>
 
