@@ -59,7 +59,8 @@ function SingleMarketView({ market }: { market: MarketSummary }) {
         <div className="relative w-full h-56 rounded-xl overflow-hidden">
           <Image
             src={market.image_url}
-            alt={market.question}
+            // --- MODIFIED LINE ---
+            alt={market.question ?? 'Market image'} // Use a fallback string if question is null
             layout="fill"
             objectFit="cover"
             className="bg-muted"
