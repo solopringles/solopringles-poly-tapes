@@ -38,7 +38,8 @@ export interface MarketSummary {
   end_date_ts: number | null;
   unique_traders: number | null;
   last_updated: number | null;
-  // --- NEWLY ADDED FIELDS ---
+  yes_token_id: string | null;
+  no_token_id: string | null;
   open_interest: number | null;
   tags: string[];
 }
