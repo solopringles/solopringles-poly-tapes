@@ -82,8 +82,8 @@ export function PriceChart({ market }: { market: MarketSummary }) {
         }
         
         augmentedData = [
-          { timestamp: startTime.getTime() / 1000, price: currentPrice },
-          { timestamp: now.getTime() / 1000, price: currentPrice },
+          { timestamp: startTime.getTime() / 1000, price: currentPrice ?? 0 },
+          { timestamp: now.getTime() / 1000, price: currentPrice ?? 0 },
         ];
       } else {
         const lastPoint = historyData[historyData.length - 1];
