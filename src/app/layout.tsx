@@ -36,14 +36,14 @@ export default function RootLayout({
         
         {/* Main Content Area: Sidebar + Page */}
         <div className="flex flex-1">
-          {/* Sidebar Area */}
-          <div className="sticky top-0 h-screen">
-            {/* The Sidebar component will need refactoring next! */}
+          {/* Sidebar Area: Hidden on mobile (hidden), shown as a flexbox item on medium screens and up (md:flex) */}
+          <div className="hidden md:flex sticky top-0 h-screen overflow-y-auto">
             <Sidebar />
           </div>
           
           {/* Main Page Content */}
-          <main className="flex-1 p-8 overflow-y-auto">
+          <main className="flex-1 p-4 md:p-8 overflow-y-auto">
+            {/* You would also add a Mobile Header with a hamburger button here */}
             {children}
           </main>
         </div>

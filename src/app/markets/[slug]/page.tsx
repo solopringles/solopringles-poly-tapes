@@ -133,15 +133,11 @@ function MultiMarketView({ group }: { group: { groupName: string, childMarkets: 
 
 
 
-type MarketDetailPageProps = {
-  params: { slug: string };
-  searchParams: { cid?: string };
-};
+export default async function MarketDetailPage(props: any): Promise<JSX.Element> {
+  // Manually extract and type the props we need to restore type safety
+  const params: { slug: string } = props.params;
+  const searchParams: { cid?: string } = props.searchParams;
 
-export default async function MarketDetailPage({
-  params,
-  searchParams,
-}: MarketDetailPageProps): Promise<JSX.Element> {
   const conditionId = searchParams?.cid;
   const slug = params.slug;
 
