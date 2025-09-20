@@ -1,4 +1,4 @@
-// /src/app/markets/[slug]/page.tsx --- COMPLETE & FINAL VERSION
+// /src/app/markets/[slug]/page.tsx --- PROACTIVELY FIXED VERSION
 
 import { JSX } from 'react';
 import { notFound } from 'next/navigation';
@@ -10,7 +10,6 @@ import { MarketSummary } from '@/types';
 import { MarketStats } from '@/components/MarketStats';
 import { PriceChart } from '@/components/PriceChart';
 import { RecentTrades } from '@/components/RecentTrades';
-// --- 1. IMPORT THE NEW COMPONENT ---
 import { LiveOrderbook } from '@/components/LiveOrderbook';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -19,13 +18,7 @@ import { formatCurrency } from '@/utils/formatters';
 import React from 'react';
 
 
-// Define the shape of the page's props
-interface MarketDetailPageProps {
-  params: { slug: string };
-  searchParams: { [key:string]: string | string[] | undefined };
-}
-
-// --- Data Fetching Functions (No changes needed) ---
+// --- Data Fetching Functions (No changes) ---
 async function getMarketDetails(conditionId: string): Promise<MarketSummary | null> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   try {
@@ -59,8 +52,7 @@ function SingleMarketView({ market }: { market: MarketSummary }) {
         <div className="relative w-full h-56 rounded-xl overflow-hidden">
           <Image
             src={market.image_url}
-            // --- MODIFIED LINE ---
-            alt={market.question ?? 'Market image'} // Use a fallback string if question is null
+            alt={market.question ?? 'Market image'}
             layout="fill"
             objectFit="cover"
             className="bg-muted"
@@ -70,19 +62,15 @@ function SingleMarketView({ market }: { market: MarketSummary }) {
       
       {/* Page Header Section */}
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">{market.question}</h1>
+        {/* FIX #4: Provide a fallback for the main title */}
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">{market.question ?? 'Untitled Market'}</h1>
         <div className="flex items-center gap-2">
           <Badge variant="secondary">{market.category}</Badge>
-          
-          {/* --- MODIFIED SECTION --- */}
-          {/* Only render this span if the end_date_ts exists and is a valid number */}
           {market.end_date_ts && (
             <span className="text-sm text-muted-foreground">
               Resolves: {format(new Date(market.end_date_ts * 1000), 'MMM d, yyyy')}
             </span>
           )}
-          {/* --- END MODIFICATION --- */}
-
         </div>
       </div>
 
@@ -91,9 +79,10 @@ function SingleMarketView({ market }: { market: MarketSummary }) {
         <div className="lg:col-span-2 space-y-8">
           <PriceChart market={market} />
           
-          {/* --- 2. PLACE THE LIVE ORDERBOOK COMPONENT HERE --- */}
-          {/* It receives the 'market' object to access the necessary token IDs. */}
-          <LiveOrderbook market={market} />
+          {/* FIX #2: Conditionally render LiveOrderbook only if token IDs exist */}
+          {market.yes_token_id && market.no_token_id && (
+            <LiveOrderbook market={market} />
+          )}
           
           <RecentTrades conditionId={market.condition_id} />
         </div>
@@ -105,7 +94,7 @@ function SingleMarketView({ market }: { market: MarketSummary }) {
   );
 }
 
-// --- UI COMPONENT: View for a GROUP of markets (no CID) (No changes needed) ---
+// --- UI COMPONENT: View for a GROUP of markets (no CID) ---
 function MultiMarketView({ group }: { group: { groupName: string, childMarkets: MarketSummary[] } }) {
   return (
     <div className="space-y-8">
@@ -122,27 +111,33 @@ function MultiMarketView({ group }: { group: { groupName: string, childMarkets: 
           </TableRow>
         </TableHeader>
         <TableBody>
-          {group.childMarkets.map((market) => (
-            <TableRow key={market.condition_id} className="hover:bg-muted/50">
-              <TableCell className="font-medium">
-                <Link href={`/markets/${market.slug}?cid=${market.condition_id}`} className="hover:underline">
-                  {market.question.split(' - ')[1] || market.question}
-                </Link>
-              </TableCell>
-              <TableCell className="text-right font-mono">{formatCurrency(Number(market.price), 2)}</TableCell>
-              <TableCell className="text-right font-mono">{formatCurrency(Number(market.volume_24h))}</TableCell>
-            </TableRow>
-          ))}
+          {group.childMarkets.map((market) => {
+            // FIX #3: Don't render a row if it has no slug, as it can't be linked to
+            if (!market.slug) return null; 
+
+            // FIX #1: Safely extract the outcome from the question
+            const outcomeText = market.question?.split(' - ')[1] || market.question || 'N/A';
+
+            return (
+              <TableRow key={market.condition_id} className="hover:bg-muted/50">
+                <TableCell className="font-medium">
+                  <Link href={`/markets/${market.slug}?cid=${market.condition_id}`} className="hover:underline">
+                    {outcomeText}
+                  </Link>
+                </TableCell>
+                <TableCell className="text-right font-mono">{formatCurrency(Number(market.price), 2)}</TableCell>
+                <TableCell className="text-right font-mono">{formatCurrency(Number(market.volume_24h))}</TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>
   );
 }
 
-
-
+// Main Page Component (Using the workaround for the persistent build error)
 export default async function MarketDetailPage(props: any): Promise<JSX.Element> {
-  // Manually extract and type the props we need to restore type safety
   const params: { slug: string } = props.params;
   const searchParams: { cid?: string } = props.searchParams;
 
@@ -150,12 +145,10 @@ export default async function MarketDetailPage(props: any): Promise<JSX.Element>
   const slug = params.slug;
 
   if (conditionId) {
-    // SCENARIO 1: We have a CID, fetch and render the single market view.
     const market = await getMarketDetails(conditionId);
     if (!market) notFound();
     return <SingleMarketView market={market} />;
   } else {
-    // SCENARIO 2: No CID, use the slug to fetch the group and render the multi-market view.
     const group = await getMarketGroup(slug);
     if (!group) notFound();
     return <MultiMarketView group={group} />;
