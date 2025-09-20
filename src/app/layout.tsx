@@ -8,6 +8,9 @@ import { Sidebar } from "@/components/Sidebar";
 import { Footer } from "@/components/Footer";
 import { cn } from "@/lib/utils"; // Import cn utility if you are using it elsewhere
 
+import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/next"
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {

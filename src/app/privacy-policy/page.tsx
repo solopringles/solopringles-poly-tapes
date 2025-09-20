@@ -15,59 +15,57 @@ export default function PrivacyPolicyPage() {
 
                 <h2>1. Information We Collect</h2>
                 <p>
-                    We operate on a principle of data minimization. We do not require user registration, and therefore we **do not directly collect any personally identifiable information (PII)** such as your name, email address, or wallet address. Our goal is to understand how our Service performs, not who you are.
+                    We do not require user registration, and therefore we **do not collect any direct personally identifiable information (PII)** such as your name, email address, or wallet address. Our goal is to provide our Service with a strong focus on user privacy.
                 </p>
-                
-                <h3>Anonymous Performance and Usage Data</h3>
                 <p>
-                    To maintain and improve our Service, we collect anonymous, non-personally identifiable information through the following methods:
+                    However, to operate and improve our Service, we utilize analytics tools provided by our hosting platform, Vercel. Through these tools, we may collect certain information about your visit. This information is processed in a way that is not directly tied to your personal identity. The types of data collected include:
                 </p>
                 <ul>
-                    <li><strong>Web Server Logs:</strong> Standard server logs which may include your IP address, browser type, and pages visited. This is used for monitoring the security and health of our infrastructure.</li>
-                    <li><strong>Analytics Services:</strong> We use third-party services, such as Vercel Speed Insights, to gather real-world performance data from your browser. This data includes metrics like page load speed and Core Web Vitals. This information is anonymized and aggregated, and is not used to personally identify or track you across different websites.</li>
+                    <li><strong>Usage Data:</strong> This includes the pages you visit, the duration of your visit, the links you click on, and the paths you take through our Service.</li>
+                    <li><strong>Device and Browser Information:</strong> This includes your device type (e.g., desktop, mobile), operating system, browser type, and screen resolution.</li>
+                    <li><strong>Geographic Information:</strong> Your general geographic location (e.g., country and city) is derived from your IP address, but your specific IP address is anonymized.</li>
+                    <li><strong>Referral Information:</strong> The source from which you accessed our Service (e.g., a direct link, a search engine, or another website).</li>
+                    <li><strong>Performance Metrics (Speed Insights):</strong> We collect data on the performance of our website, such as page load times, to diagnose and fix technical issues. This data is aggregated and does not identify individual users.</li>
                 </ul>
-
 
                 <h2>2. How We Use Information</h2>
                 <p>
-                    The anonymous and aggregated data we collect is used solely for the following purposes:
+                    The data collected through Vercel Analytics and Speed Insights is used exclusively for the following purposes:
                 </p>
                 <ul>
-                    <li>To operate, maintain, and improve the performance and user experience of the Service.</li>
-                    <li>To monitor for security threats and prevent abuse.</li>
-                    <li>To analyze usage trends and identify which features are most popular.</li>
-                    <li>To diagnose and fix technical errors.</li>
+                    <li>To operate, maintain, and improve the performance and user experience of our Service.</li>
+                    <li>To understand how users interact with our website so we can make more informed decisions about features and design.</li>
+                    <li>To monitor for security threats, prevent abuse, and ensure the stability of our infrastructure.</li>
+                    <li>To generate aggregated, anonymous statistical reports about our user base and traffic patterns.</li>
                 </ul>
 
-                <h2>3. Cookies</h2>
+                <h2>3. Cookies and Tracking Technologies</h2>
                 <p>
-                    We do not use tracking cookies for advertising or cross-site profiling. Our hosting provider (Vercel) and the Next.js framework may use essential cookies for the basic functioning of the website, such as for caching and performance optimization.
+                    Our Service, through Vercel Analytics, uses a small, privacy-focused tracking script. This script **does not use cookies**. It identifies unique user sessions for a 24-hour period based on a hash of the incoming request details, without storing any information on your device. This allows us to count unique visitors without long-term tracking.
+                </p>
+                <p>
+                    The Next.js framework itself may use essential cookies for the basic functioning of the website.
                 </p>
 
-                <h2>4. Data Sharing</h2>
+                <h2>4. Third-Party Services</h2>
                 <p>
-                    We do not sell, trade, or otherwise transfer your information to outside parties, except as described in this policy. We may share aggregated, anonymous data with the third-party service providers mentioned below for the sole purpose of improving our Service.
+                    Our Service is hosted on Vercel, which provides the analytics and speed insights functionality described in this policy. For more information on how Vercel handles data, you can review the <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">Vercel Privacy Policy</a>.
+                </p>
+                <p>
+                    Our Service also interacts with the public Polymarket API to display market data. We do not share any user information with Polymarket. Your interactions with the Polymarket website via links from our Service are subject to Polymarket's own Terms of Service and Privacy Policy.
                 </p>
 
-                <h2>5. Third-Party Services</h2>
+                <h2>5. Data Security</h2>
                 <p>
-                    Our Service is hosted on Vercel and utilizes its analytics tools (Speed Insights). Vercel's data collection and use are governed by its own privacy policy. We rely on Vercel's commitment to handle this data in an anonymous and privacy-preserving manner.
-                </p>
-                <p>
-                    Additionally, our Service interacts with the public Polymarket API to display market data. We do not share any user information with Polymarket. Your interactions with the Polymarket website via links from our Service are subject to Polymarket's own Terms of Service and Privacy Policy.
+                    We rely on the security measures implemented by our hosting provider, Vercel, to protect the data collected. While reasonable security measures are in place, no method of transmission over the Internet or method of electronic storage is 100% secure.
                 </p>
 
-                <h2>6. Data Security</h2>
-                <p>
-                    We implement reasonable security measures to maintain the safety of the anonymous data we collect. However, no method of transmission over the Internet or method of electronic storage is 100% secure.
-                </p>
-
-                <h2>7. Changes to This Privacy Policy</h2>
+                <h2>6. Changes to This Privacy Policy</h2>
                 <p>
                     We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last Updated" date.
                 </p>
 
-                <h2>8. Contact Us</h2>
+                <h2>7. Contact Us</h2>
                 <p>
                     If you have any questions about this Privacy Policy, please contact us at: contact@polyleviathan.com.
                 </p>
