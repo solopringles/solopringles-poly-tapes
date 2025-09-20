@@ -67,19 +67,18 @@ export function MarketTableRow({ market }: MarketTableRowProps) {
   const avatarFallback = market.question?.substring(0, 2).toUpperCase() || 'M';
 
   return (
-    // NEW: Added transition classes for smooth fade-in/out and a theme-aware hover effect.
     <TableRow className="transition-opacity duration-300 ease-in-out hover:bg-muted/50">
       
       {/* Cell 1: Image Avatar */}
       <TableCell className="w-px">
         <Link href={internalUrl} className={!isLinkable ? 'pointer-events-none' : ''}>
           <Avatar>
-            <AvatarImage src={market.image_url} alt={market.question || 'Market image'} />
+            {/* --- MODIFIED LINE --- */}
+            <AvatarImage src={market.image_url ?? undefined} alt={market.question || 'Market image'} />
             <AvatarFallback>{avatarFallback}</AvatarFallback>
           </Avatar>
         </Link>
       </TableCell>
-
       {/* Cell 2: Question */}
       <TableCell className="max-w-sm font-medium">
         <Link href={internalUrl} className={`hover:underline ${!isLinkable ? 'pointer-events-none' : ''}`}>
