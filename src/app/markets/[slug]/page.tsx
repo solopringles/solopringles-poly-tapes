@@ -128,9 +128,15 @@ function MultiMarketView({ group }: { group: { groupName: string, childMarkets: 
   );
 }
 
-// --- Main Page Component (No changes needed) ---
-export default async function MarketDetailPage({ params, searchParams }: MarketDetailPageProps) {
-  const conditionId = searchParams?.cid as string;
+// --- Main Page Component (REVISED SIGNATURE) ---
+export default async function MarketDetailPage({
+  params,
+  searchParams,
+}: {
+  params: { slug: string };
+  searchParams: { cid?: string }; // Be more specific about the search param you expect
+}) {
+  const conditionId = searchParams?.cid; // No 'as string' cast needed, it's already typed
   const slug = params.slug;
 
   if (conditionId) {
