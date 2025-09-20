@@ -1,5 +1,6 @@
 // /src/app/markets/[slug]/page.tsx --- COMPLETE & FINAL VERSION
 
+import { JSX } from 'react';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -130,13 +131,17 @@ function MultiMarketView({ group }: { group: { groupName: string, childMarkets: 
   );
 }
 
+
+
 type MarketDetailPageProps = {
   params: { slug: string };
   searchParams: { cid?: string };
 };
 
-// --- Main Page Component (REVISED with explicit typing) ---
-const MarketDetailPage: React.FC<MarketDetailPageProps> = async ({ params, searchParams }) => {
+export default async function MarketDetailPage({
+  params,
+  searchParams,
+}: MarketDetailPageProps): Promise<JSX.Element> {
   const conditionId = searchParams?.cid;
   const slug = params.slug;
 
@@ -151,6 +156,4 @@ const MarketDetailPage: React.FC<MarketDetailPageProps> = async ({ params, searc
     if (!group) notFound();
     return <MultiMarketView group={group} />;
   }
-};
-
-export default MarketDetailPage;
+}
