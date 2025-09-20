@@ -38,67 +38,68 @@ export function LiveOrderbook({ market }: LiveOrderbookProps) {
   const ws = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    // The orderbook is typically for the 'YES' token
-    const assetId = market.yes_token_id;
-    if (!assetId) {
-      console.error("No yes_token_id found on the market object. Cannot connect WebSocket.");
-      setConnectionStatus('Disconnected');
-      return;
-    };
+      // The orderbook is typically for the 'YES' token
+      const assetId = market.yes_token_id;
+      if (!assetId) {
+        console.error("No yes_token_id found on the market object. Cannot connect WebSocket.");
+        setConnectionStatus('Disconnected');
+        return;
+      };
 
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL;
-    if (!wsUrl) {
-      console.error("NEXT_PUBLIC_WS_URL is not defined! Check your .env file.");
-      setConnectionStatus('Disconnected');
-      return;
-    }
+      const wsUrl = process.env.NEXT_PUBLIC_WS_URL;
+      if (!wsUrl) {
+        console.error("NEXT_PUBLIC_WS_URL is not defined! Check your .env file.");
+        setConnectionStatus('Disconnected');
+        return;
+      }
 
-    // Establish WebSocket connection
-    ws.current = new WebSocket(wsUrl);
+      // Establish WebSocket connection
+      ws.current = new WebSocket(wsUrl);
 
-    ws.current.onopen = () => {
-      console.log('WebSocket connected:', wsUrl);
-      setConnectionStatus('Connecting');
-      // Send subscription message to the backend
-      ws.current?.send(JSON.stringify({ type: 'subscribe', assetId }));
-    };
+      ws.current.onopen = () => {
+        console.log('WebSocket connected:', wsUrl);
+        setConnectionStatus('Connecting');
+        // Send subscription message to the backend
+        ws.current?.send(JSON.stringify({ type: 'subscribe', assetId }));
+      };
 
-    ws.current.onmessage = (event) => {
-      try {
-        const data: DomSnapshot = JSON.parse(event.data);
-        // Ensure the message is for the asset we are subscribed to
-        if (data.assetId === assetId) {
-          setBids(data.bids);
-          setAsks(data.asks);
-          // Switch to 'Live' only after the first successful data message
-          if (connectionStatus !== 'Live') {
-            setConnectionStatus('Live');
+      ws.current.onmessage = (event) => {
+        try {
+          const data: DomSnapshot = JSON.parse(event.data);
+          // Ensure the message is for the asset we are subscribed to
+          if (data.assetId === assetId) {
+            setBids(data.bids);
+            setAsks(data.asks);
+            // Switch to 'Live' only after the first successful data message
+            if (connectionStatus !== 'Live') {
+              setConnectionStatus('Live');
+            }
           }
+        } catch (error) {
+          console.error('Failed to parse WebSocket message:', error);
         }
-      } catch (error) {
-        console.error('Failed to parse WebSocket message:', error);
-      }
-    };
+      };
 
-    ws.current.onclose = () => {
-      console.log('WebSocket disconnected');
-      setConnectionStatus('Disconnected');
-    };
+      ws.current.onclose = () => {
+        console.log('WebSocket disconnected');
+        setConnectionStatus('Disconnected');
+      };
 
-    ws.current.onerror = (error) => {
-      console.error('WebSocket connection error:', error);
-      setConnectionStatus('Disconnected');
-    };
+      ws.current.onerror = (error) => {
+        console.error('WebSocket connection error:', error);
+        setConnectionStatus('Disconnected');
+      };
 
-    // Cleanup function to run when the component unmounts or dependencies change
-    return () => {
-      if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-        console.log('Component unmounting: Unsubscribing and closing WebSocket.');
-        ws.current.send(JSON.stringify({ type: 'unsubscribe', assetId }));
-        ws.current.close();
-      }
-    };
-  }, [market.yes_token_id, connectionStatus]); // Rerun effect if the asset ID changes
+      // Cleanup function to run when the component unmounts or dependencies change
+      return () => {
+        if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+          console.log('Component unmounting: Unsubscribing and closing WebSocket.');
+          ws.current.send(JSON.stringify({ type: 'unsubscribe', assetId }));
+          ws.current.close();
+        }
+      };
+      // --- THE FIX: REMOVED 'connectionStatus' from the dependency array ---
+    }, [market.yes_token_id]);
 
   // --- Rendering Logic ---
   const maxRows = Math.max(bids.length, asks.length, 10); // Display at least 10 rows
