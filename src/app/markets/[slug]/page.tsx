@@ -15,6 +15,8 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
 import { formatCurrency } from '@/utils/formatters';
+import React from 'react';
+
 
 // Define the shape of the page's props
 interface MarketDetailPageProps {
@@ -128,15 +130,14 @@ function MultiMarketView({ group }: { group: { groupName: string, childMarkets: 
   );
 }
 
-// --- Main Page Component (REVISED SIGNATURE) ---
-export default async function MarketDetailPage({
-  params,
-  searchParams,
-}: {
+type MarketDetailPageProps = {
   params: { slug: string };
-  searchParams: { cid?: string }; // Be more specific about the search param you expect
-}) {
-  const conditionId = searchParams?.cid; // No 'as string' cast needed, it's already typed
+  searchParams: { cid?: string };
+};
+
+// --- Main Page Component (REVISED with explicit typing) ---
+const MarketDetailPage: React.FC<MarketDetailPageProps> = async ({ params, searchParams }) => {
+  const conditionId = searchParams?.cid;
   const slug = params.slug;
 
   if (conditionId) {
@@ -150,4 +151,6 @@ export default async function MarketDetailPage({
     if (!group) notFound();
     return <MultiMarketView group={group} />;
   }
-}
+};
+
+export default MarketDetailPage;
