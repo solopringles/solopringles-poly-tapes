@@ -1,83 +1,125 @@
-// src/types/index.ts --- MODIFIED
+// src/types/index.ts --- FULLY CORRECTED AND COMPREHENSIVE
 
-// This type remains unchanged
+// Represents a single trade or mover event from the live activity feed
 export type Trade = {
-  tx_hash: string;
+  type: 'trade' | 'mover'; // Distinguishes between event types
+  timestamp: number;
+  taker_address: string | null;
   taker_nickname: string | null;
   species_name: string;
-  market_question: string;
-  action: 'BUY' | 'SELL';
-  outcome: 'YES' | 'NO';
   value_usd: number;
-  event_timestamp: number;
-  polymarket_link: string;
+  action: 'BUY' | 'SELL' | 'UP' | 'DOWN';
+  outcome: 'YES' | 'NO' | null;
   price: number;
-  size_shares: number;
+  condition_id: string;
+  question: string;
+  market_slug: string | null;
+  parent_event_slug: string | null;
+  // Legacy fields, can be phased out
+  tx_hash?: string;
+  polymarket_link?: string;
 };
 
-// --- REPLACE the old MarketSummary with this one ---
+// Represents the summary of a market, used in lists
 export interface MarketSummary {
   condition_id: string;
   question: string | null;
   slug: string | null;
   parent_event_slug?: string | null;
-  childMarketCount?: number;
   image_url: string | null;
   category: string | null;
-  is_featured: number | null;
-  is_new: number | null;
+  price: number | null;
   volume_24h: number | null;
   volume_7d: number | null;
-  volume_30d: number | null;
-  total_volume: number | null;
   liquidity: number | null;
-  price: number | null;
-  price_change_1h: number | null;
   price_change_24h: number | null;
-  start_date_ts: number | null;
   end_date_ts: number | null;
-  unique_traders: number | null;
-  last_updated: number | null;
-  yes_token_id: string | null;
-  no_token_id: string | null;
+  start_date_ts: number | null; // Added for sorting 'new' markets
   open_interest: number | null;
-  tags: string[];
+  is_featured: number | null;
+  is_new: number | null;
+  // Fields for grouped markets
+  childMarketCount?: number;
+  isGroupSummary?: boolean;
+  // Fields from the full detail endpoint that might be useful
+  tags?: string[];
+  total_volume?: number;
+  yes_token_id?: string | null;
+  no_token_id?: string | null;
 }
 
-// --- ADD THIS NEW INTERFACE ---
-/**
- * Represents the structure of the API response from the /api/markets endpoint,
- * which will be used for searching and listing markets.
- */
+// Represents the full API response for the /api/markets endpoint
 export interface MarketsApiResponse {
   markets: MarketSummary[];
   total_pages: number;
   current_page: number;
 }
 
-
-// This interface remains unchanged
+// Represents a single entry on the leaderboard
 export interface LeaderboardEntry {
+  rank: number;
   address: string;
-  display_name: string;
+  display_name?: string;
+  avatar_url_optimized?: string;
   pq_score: number | null;
   all_time_realized_pnl: number | null;
   volume_90day: number | null;
-  lifetime_sharpe_ratio: number | null;
+  sortino_ratio: number | null;
   trade_count_90day: number | null;
-  isPnlDataIncomplete?: boolean; // Optional flag
+  profit_factor: number | null;
+  avg_pnl_per_trade: number | null;
+  herding_contrarian_index: number | null;
+  outcome_bias_index: number | null;
+  first_mover_volume_percent: number | null;
+  isPnlDataIncomplete?: boolean;
 }
 
-// This interface remains unchanged
-export interface TraderProfile extends LeaderboardEntry {
-  date_added: number;
-  last_trade_timestamp: number | null;
-  is_high_activity: number; // Will be 0 or 1
-  realized_pnl: number | null;
-  unrealized_pnl: number | null;
-  trade_count: number | null;
-  profit_factor: number | null;
-  win_loss_ratio: number | null;
-  pnl_volatility: number | null;
-  last_calculated: number | null;
+// --- THIS IS THE MISSING TYPE THAT CAUSED THE BUILD FAILURE ---
+// Represents the full API response for the /api/leaderboard endpoint
+export interface LeaderboardApiResponse {
+  traders: LeaderboardEntry[];
+  total_pages: number;
+  current_page: number;
+}
+// ---
+
+// Represents the detailed profile of a single trader
+export interface TraderProfile {
+  profile: {
+    address: string;
+    display_name?: string;
+    avatar_url_optimized?: string;
+    date_added: number;
+  };
+  stats: {
+    pq_score: number | null;
+    all_time_realized_pnl: number | null;
+    volume_90day: number | null;
+    trade_count_90day: number | null;
+    sortino_ratio: number | null;
+    profit_factor: number | null;
+    avg_pnl_per_trade: number | null;
+    herding_contrarian_index: number | null;
+    outcome_bias_index: number | null;
+    first_mover_volume_percent: number | null;
+    category_concentration: Record<string, number> | null;
+  };
+  open_positions: {
+    condition_id: string;
+    question: string;
+    outcome: 'Yes' | 'No';
+    size: number;
+    avg_price: number;
+    current_value: number;
+    unrealized_pnl: number;
+  }[];
+  recent_activity: {
+    event_timestamp: number;
+    condition_id: string;
+    question: string;
+    outcome: 'YES' | 'NO';
+    action: 'BUY' | 'SELL';
+    value_usd: number;
+    price: number;
+  }[];
 }
