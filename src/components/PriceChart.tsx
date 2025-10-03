@@ -88,7 +88,7 @@ export function PriceChart({ market }: { market: MarketSummary }) {
       } else {
         const lastPoint = historyData[historyData.length - 1];
         // Ensure we don't add a duplicate point if the last point is already "now"
-        if (lastPoint.timestamp < now.getTime() / 1000 - 60) { // Add some buffer
+        if (lastPoint && lastPoint.timestamp < now.getTime() / 1000 - 60) { // Add some buffer
             augmentedData.push({
               timestamp: now.getTime() / 1000,
               price: lastPoint.price,

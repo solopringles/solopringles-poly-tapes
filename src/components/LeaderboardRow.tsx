@@ -9,19 +9,21 @@ import { TriangleAlert } from 'lucide-react';
 
 interface LeaderboardRowProps {
   entry: LeaderboardEntry;
-  rank: number;
-  category: 'pq-score' | 'pnl' | 'volume';
+  rank: number; // This remains the same, but its source is now the API
+  // --- MODIFICATION: Widen the category type to match the new props ---
+  category: 'pq_score' | 'all_time_realized_pnl' | 'volume_90day';
 }
 
 const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ entry, rank, category }) => {
-  // This function determines which value to display based on the category
   const displayValue = () => {
     switch (category) {
-      case 'pq-score':
+      case 'pq_score':
         return formatScore(entry.pq_score);
-      case 'pnl':
+      // --- MODIFICATION: Use the correct key for pnl ---
+      case 'all_time_realized_pnl':
         return formatCurrency(entry.all_time_realized_pnl);
-      case 'volume':
+      // --- MODIFICATION: Use the correct key for volume ---
+      case 'volume_90day':
         return formatCurrency(entry.volume_90day);
       default:
         return 'N/A';
