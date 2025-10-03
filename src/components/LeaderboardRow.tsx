@@ -62,7 +62,7 @@ const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ entry, rank, category }
 
       {/* Value and Tooltip (flex-shrink prevents it from shrinking) */}
       <div className="flex flex-shrink-0 items-center space-x-2">
-        {entry.isPnlDataIncomplete && category === 'pnl' && (
+        {entry.isPnlDataIncomplete && category === 'all_time_realized_pnl' && (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
